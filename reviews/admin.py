@@ -18,10 +18,13 @@ class ContributorAdmin(admin.ModelAdmin):
     list_filter = ('last_names',)
     search_fields = ('last_names__startswith', 'first_names')
 
+class ReviewAdmin(admin.ModelAdmin):
+    exclude = ('date_edited',)
+    fieldsets = (('Łącza', {'fields': ('creator', 'book')}), ('Zawartość recenzji', {'fields': ('content', 'rating')}))
 
 # Register your models here.
 admin.site.register(Publisher)
 admin.site.register(Contributor, ContributorAdmin)
 admin.site.register(Book, BookAdmin)
 admin.site.register(BookContributor)
-admin.site.register(Review)
+admin.site.register(Review, ReviewAdmin)
