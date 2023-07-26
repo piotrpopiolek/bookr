@@ -20,7 +20,13 @@ class Book(models.Model):
     contributors = models.ManyToManyField('Contributor',
                                           through="BookContributor")
     def __str__(self):
-        return self.title
+        return '{} ({})'.format(self.title, self.isbn)
+
+    def isbn13(self):
+        """ '9780316769174' => '978-0-31-676917-4' """
+        return "{}-{}-{}-{}-{}".format(self.isbn[0:3], self.isbn[3:4],
+                                       self.isbn[4:6], self.isbn[6:12],
+                                       self.isbn[12:13])
 
 class Contributor(models.Model):
     first_names = models.CharField(max_length=50,
@@ -29,8 +35,15 @@ class Contributor(models.Model):
                                   help_text='Nazwisko lub nazwiska współtwórcy')
     email = models.EmailField(help_text='E-mail współtwórcy')
 
+    def initialled_name(self):
+        """ self.first_names='Jerome David', self.last_names='Salinger'
+            => 'Salinger, JD' """
+        initials = ''.join([name[0] for name
+                            in self.first_names.split(' ')])
+        return "{}, {}".format(self.last_names, initials)
+
     def __str__(self):
-        return self.first_names
+        return self.initialled_name()
 
 class BookContributor(models.Model):
     class ContributionRole(models.TextChoices):
@@ -42,6 +55,8 @@ class BookContributor(models.Model):
     contributor = models.ForeignKey(Contributor, on_delete=models.CASCADE)
     role = models.CharField(verbose_name='Rola, jaką współtwórca odegrał podczas tworzenia tej książki',
                             choices=ContributionRole.choices, max_length=20)
+    def __str__(self):
+        return f'{self.contributor} - {self.book}'
 
 class Review(models.Model):
     content = models.TextField(help_text='Tekst recenzji')
